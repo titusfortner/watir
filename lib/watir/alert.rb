@@ -103,8 +103,6 @@ module Watir
     end
 
     def wait_for_exists
-      return assert_exists unless Watir.relaxed_locate?
-
       begin
         wait_until(message: 'waiting for alert', &:exists?)
       rescue Wait::TimeoutError
