@@ -44,9 +44,6 @@ matrix:
       - env: RAKE_TASK=spec:remote_chrome
         <<: *five
         <<: *chrome
-      - env: RAKE_TASK=spec:firefox RELAXED_LOCATE=false
-        <<: *five
-        <<: *firefox-latest
       - env: RAKE_TASK=spec:firefox
         <<: *five
         <<: *firefox-latest
@@ -64,9 +61,6 @@ matrix:
         <<: *chrome
       - env: RAKE_TASK=spec:chrome
         <<: *three
-        <<: *chrome
-      - env: RAKE_TASK=spec:chrome RELAXED_LOCATE=false
-        <<: *five
         <<: *chrome
       - env: RAKE_TASK=spec:chrome W3C=true
         <<: *five
