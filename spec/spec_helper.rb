@@ -33,8 +33,6 @@ if ENV['TRAVIS']
   end
 end
 
-SELENIUM_SELECTORS = %i[css tag_name xpath link_text partial_link_text link].freeze
-
 ENV['DISPLAY'] = ':99.0' if ENV['TRAVIS']
 
 raise 'DISPLAY not set' if Selenium::WebDriver::Platform.linux? && ENV['DISPLAY'].nil?
