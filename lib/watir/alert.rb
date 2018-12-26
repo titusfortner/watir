@@ -103,11 +103,9 @@ module Watir
     end
 
     def wait_for_exists
-      begin
-        wait_until(message: 'waiting for alert', &:exists?)
-      rescue Wait::TimeoutError
-        raise UnknownObjectException, 'unable to locate alert'
-      end
+      wait_until(message: 'waiting for alert', &:exists?)
+    rescue Wait::TimeoutError
+      raise UnknownObjectException, 'unable to locate alert'
     end
   end # Alert
 end # Watir

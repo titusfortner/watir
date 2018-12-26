@@ -336,9 +336,9 @@ describe 'SelectList' do
     it "raises NoValueFoundException if the option doesn't exist" do
       message = /#<Watir::Select: located: false; {:name=>"new_user_country", :tag_name=>"select"}>/
       expect { browser.select_list(name: 'new_user_country').select('missing_option') }
-          .to raise_no_value_found_exception message
+        .to raise_no_value_found_exception message
       expect { browser.select_list(name: 'new_user_country').select(/missing_option/) }
-          .to raise_no_value_found_exception message
+        .to raise_no_value_found_exception message
     end
 
     bug 'Safari is returning object enabled instead of disabled', :safari do
@@ -437,9 +437,9 @@ describe 'SelectList' do
 
     it "raises NoValueFoundException if the option doesn't exist" do
       expect { browser.select_list(id: 'new_user_country').select!('missing_option') }
-          .to raise_no_value_found_exception
+        .to raise_no_value_found_exception
       expect { browser.select_list(id: 'new_user_country').select!(/missing_option/) }
-          .to raise_no_value_found_exception
+        .to raise_no_value_found_exception
     end
 
     bug 'Safari is returning object enabled instead of disabled', :safari do

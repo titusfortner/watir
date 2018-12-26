@@ -208,8 +208,7 @@ module Watir
         @found = options(label: str_or_rx) if @found.empty?
         @found.empty?
       end
-      return @found
-
+      @found
     rescue Wait::TimeoutError
       raise_no_value_found(str_or_rx)
     end

@@ -5,19 +5,19 @@ describe Watir::Element do
     browser.goto WatirSpec.url_for('wait.html')
   end
 
-    it 'clicking automatically waits until the element appears' do
-      browser.a(id: 'show_bar').click
-      expect { browser.div(id: 'bar').click }.to_not raise_exception
-      expect(browser.div(id: 'bar').text).to eq 'changed'
-    end
+  it 'clicking automatically waits until the element appears' do
+    browser.a(id: 'show_bar').click
+    expect { browser.div(id: 'bar').click }.to_not raise_exception
+    expect(browser.div(id: 'bar').text).to eq 'changed'
+  end
 
-    it "raises exception if the element doesn't appear" do
-      expect { browser.div(id: 'bar').click }.to raise_unknown_object_exception
-    end
+  it "raises exception if the element doesn't appear" do
+    expect { browser.div(id: 'bar').click }.to raise_unknown_object_exception
+  end
 
-    it "raises exception if the element doesn't become enabled" do
-      expect { browser.button(id: 'btn').click }.to raise_object_disabled_exception
-    end
+  it "raises exception if the element doesn't become enabled" do
+    expect { browser.button(id: 'btn').click }.to raise_object_disabled_exception
+  end
 
   describe '#wait_until_present' do
     it 'waits until the element appears' do
