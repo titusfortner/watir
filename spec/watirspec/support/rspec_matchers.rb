@@ -3,8 +3,7 @@ if defined?(RSpec)
                             use_capabilities
                             visible_text
                             text_regexp
-                            select_by
-                            value_button].freeze
+                            select_by].freeze
 
   DEPRECATION_WARNINGS.each do |deprecation|
     RSpec::Matchers.define "have_deprecated_#{deprecation}" do
