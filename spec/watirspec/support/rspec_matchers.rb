@@ -2,7 +2,6 @@ if defined?(RSpec)
   DEPRECATION_WARNINGS = %i[selector_parameters
                             use_capabilities
                             visible_text
-                            link_text
                             text_regexp
                             select_by
                             value_button
