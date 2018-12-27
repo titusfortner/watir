@@ -135,7 +135,7 @@ module Watir
     #
 
     def text_content
-      element_call { execute_js(:getTextContent, @element) }.strip
+      element_call { execute_js(:getTextContent, @element) }.strip.gsub(/\s+/, ' ')
     end
 
     #
