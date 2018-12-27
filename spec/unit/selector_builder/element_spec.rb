@@ -272,6 +272,13 @@ describe Watir::Locators::Element::SelectorBuilder do
         expect(selector_builder.build(selector)).to eq built
       end
 
+      it 'Regexp uses contains normalize space' do
+        selector = {text: /Add/}
+        built = {xpath: ".//*[contains(normalize-space(), 'Add')]"}
+
+        expect(selector_builder.build(selector)).to eq built
+      end
+
       it 'raises exception when text is not a String or Regexp' do
         selector = {text: 7}
         msg = /expected one of \[String, Regexp\], got 7:(Fixnum|Integer)/
@@ -600,16 +607,9 @@ describe Watir::Locators::Element::SelectorBuilder do
         expect(selector_builder.build(selector)).to eq built
       end
 
-      it 'class with complicated Regexp' do
+      it 'class with complex Regexp' do
         selector = {class: /he?r/}
         built = {xpath: ".//*[contains(@class, 'h') and contains(@class, 'r')]", class: [/he?r/]}
-
-        expect(selector_builder.build(selector)).to eq built
-      end
-
-      it 'text with any Regexp' do
-        selector = {text: /Add/}
-        built = {xpath: './/*', text: /Add/}
 
         expect(selector_builder.build(selector)).to eq built
       end

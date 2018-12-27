@@ -3,6 +3,7 @@ module Watir
     class Element
       class Matcher
         include Exception
+        include JSSnippets
 
         attr_reader :query_scope, :selector
 
@@ -71,8 +72,6 @@ module Watir
             end
           end
 
-          deprecate_text_regexp(element, values_to_match) if values_to_match[:text] && matches
-
           matches
         end
 
@@ -85,7 +84,7 @@ module Watir
           when :tag_name
             element.tag_name.downcase
           when :text
-            element.text
+            execute_js(:getTextContent, element)
           when :visible
             element.displayed?
           when :visible_text
@@ -111,18 +110,6 @@ module Watir
         def validate_tag(element, expected)
           tag_name = fetch_value(element, :tag_name)
           matches_values?(tag_name, expected)
-        end
-
-        def deprecate_text_regexp(element, selector)
-          new_element = Watir::Element.new(@query_scope, element: element)
-          text_content = new_element.text_content
-
-          return if text_content =~ /#{selector[:text]}/
-
-          key = @selector.key?(:text) ? 'text' : 'label'
-          selector_text = selector[:text].inspect
-          dep = "Using :#{key} locator with RegExp #{selector_text} to match an element that includes hidden text"
-          Watir.logger.deprecate(dep, ":visible_#{key}", ids: [:text_regexp])
         end
       end
     end
