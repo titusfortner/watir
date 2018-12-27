@@ -485,7 +485,7 @@ module Watir
         return true unless present?
 
         scroll.to
-        execute_js(:elementObscured, self)
+        execute_js(:elementObscured, @element)
       end
     end
 

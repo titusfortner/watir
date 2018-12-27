@@ -215,7 +215,7 @@ module Watir
 
     def execute_script(script, *args)
       args.map! do |e|
-        e.is_a?(Element) ? e.wait_until(&:exists?).wd : e
+        e.is_a?(Element) ? e.wait_until { e.located? || e.exists? }.wd : e
       end
 
       wrap_elements_in(self, @driver.execute_script(script, *args))

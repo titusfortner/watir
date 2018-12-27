@@ -18,7 +18,7 @@ module Watir
     #
 
     def include?(str_or_rx)
-      option(text: str_or_rx).exist? || option(label: str_or_rx).exist?
+      option(text: str_or_rx).exist? || option(label: str_or_rx).exist? || option(value: str_or_rx).exists?
     end
 
     #
@@ -29,22 +29,17 @@ module Watir
     # @return [String] The text of the option selected. If multiple options match, returns the first match.
     #
 
-    def select(*str_or_rx)
-      results = str_or_rx.flatten.map { |v| select_by v }
-      results.first
-    end
+    def select(*both, text: nil, value: nil, label: nil)
+      selection = {both: both, text: text, value: value, label: label}.select { |_k, v| !v.nil? }
+      raise "Can not select by more than one method" if selection.size > 1
 
-    #
-    # Select all options whose text or label matches the given string.
-    #
-    # @param [String, Regexp] str_or_rx
-    # @raise [Watir::Exception::NoValueFoundException] if the value does not exist.
-    # @return [String] The text of the first option selected.
-    #
+      value = selection.values.first
 
-    def select_all(*str_or_rx)
-      results = str_or_rx.flatten.map { |v| select_all_by v }
-      results.first
+      if value.size > 1 || value.first.is_a?(Array)
+        value.flatten.map { |v| select_all_by(selection.keys.first => v) }.first
+      else
+        select_by(selection).first
+      end
     end
 
     #
@@ -55,35 +50,8 @@ module Watir
     #
 
     def select!(*str_or_rx)
-      results = str_or_rx.flatten.map { |v| select_by!(v, :single) }
-      results.first
-    end
-
-    #
-    # Uses JavaScript to select all options whose text matches the given string.
-    #
-    # @param [String, Regexp] str_or_rx
-    # @raise [Watir::Exception::NoValueFoundException] if the value does not exist.
-    #
-
-    def select_all!(*str_or_rx)
-      results = str_or_rx.flatten.map { |v| select_by!(v, :multiple) }
-      results.first
-    end
-
-    #
-    # Selects the option(s) whose value attribute matches the given string.
-    #
-    # @see +select+
-    #
-    # @param [String, Regexp] str_or_rx
-    # @raise [Watir::Exception::NoValueFoundException] if the value does not exist.
-    # @return [String] The option selected. If multiple options match, returns the first match
-    #
-
-    def select_value(str_or_rx)
-      Watir.logger.deprecate '#select_value', '#select', ids: [:select_value]
-      select_by str_or_rx
+      number = (str_or_rx.size > 1 || str_or_rx.first.is_a?(Array)) ? :multiple : :single
+      str_or_rx.flatten.map { |v| select_by! v, number }.first
     end
 
     #
@@ -114,8 +82,7 @@ module Watir
     #
 
     def value
-      option = selected_options.first
-      option&.value
+      selected_options.first&.value
     end
 
     #
@@ -126,8 +93,7 @@ module Watir
     #
 
     def text
-      option = selected_options.first
-      option&.text
+      selected_options.first&.text
     end
 
     # Returns an array of currently selected options.
@@ -136,19 +102,26 @@ module Watir
     #
 
     def selected_options
-      element_call { execute_js :selectedOptions, self }
+      element_call { execute_js :selectedOptions, @element }
     end
 
     private
 
-    def select_by(str_or_rx)
-      found = find_options(:value, str_or_rx)
+    def select_by(opts)
+      type_check(opts.values.first)
+      element = option(opts).wait_until(&:exists?)
 
-      if found.size > 1
-        Watir.logger.deprecate 'Selecting Multiple Options with #select', '#select_all',
-                               ids: [:select_by]
-      end
-      select_matching(found)
+      element.click unless element.selected?
+      element.stale_in_context? ? '' : element.text
+    end
+
+    def select_all_by(opts)
+      type_check(opts.values.first)
+      elements = find_options(*opts.to_a.flatten)
+
+      selected = selected_options
+      elements.each { |e| e.click unless selected.include?(e) }
+      elements.first.stale_in_context? ? '' : elements.first.text
     end
 
     def select_by!(str_or_rx, number)
@@ -190,25 +163,23 @@ module Watir
       false
     end
 
-    def select_all_by(str_or_rx)
-      raise Error, 'you can only use #select_all on multi-selects' unless multiple?
+    def type_check(value)
+       return if [String, Numeric, Regexp].any? { |k| value.is_a?(k) }
 
-      found = find_options :text, str_or_rx
-
-      select_matching(found)
+       msg = "expected String, Number or Regexp, got #{value.inspect}:#{value.class}"
+       raise TypeError, msg
     end
 
     def find_options(how, str_or_rx)
-      msg = "expected String, Numberic or Regexp, got #{str_or_rx.inspect}:#{str_or_rx.class}"
-      raise TypeError, msg unless [String, Numeric, Regexp].any? { |k| str_or_rx.is_a?(k) }
-
-      wait_while do
-        @found = how == :value ? options(value: str_or_rx) : []
-        @found = options(text: str_or_rx) if @found.empty?
-        @found = options(label: str_or_rx) if @found.empty?
-        @found.empty?
+      wait_until do
+        found = if how == :both
+                  found = options(text: str_or_rx)
+                  options(label: str_or_rx) if found.empty?
+                else
+                  options(how => str_or_rx)
+                end
+        return found unless found.empty?
       end
-      @found
     rescue Wait::TimeoutError
       raise_no_value_found(str_or_rx)
     end
@@ -216,12 +187,6 @@ module Watir
     # TODO: Consider locating the Select List before throwing the exception
     def raise_no_value_found(str_or_rx)
       raise NoValueFoundException, "#{str_or_rx.inspect} not found in #{inspect}"
-    end
-
-    def select_matching(elements)
-      elements = [elements.first] unless multiple?
-      elements.each { |e| e.click unless e.selected? }
-      elements.first.exists? ? elements.first.text : ''
     end
   end # Select
 

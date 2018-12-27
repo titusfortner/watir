@@ -169,12 +169,10 @@ describe 'SelectList' do
       expect(browser.select_list(name: 'new_user_languages').selected_options).to be_empty
     end
 
-    it 'does not clear selections if the select list does not allow multiple selections' do
+    it 'raises exception if the select list does not allow multiple selections' do
       expect {
         browser.select_list(name: 'new_user_country').clear
       }.to raise_error(/you can only clear multi-selects/)
-
-      expect(browser.select_list(name: 'new_user_country').selected_options.map(&:text)).to eq ['Norway']
     end
 
     it "raises UnknownObjectException if the select list doesn't exist" do

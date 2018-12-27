@@ -150,7 +150,7 @@ module Watir
     end
 
     #
-    # Selects text on page (as if dragging clicked mouse across provided text).
+    # Returns value of selected text within element.
     #
     # @example
     #   browser.li(id: 'non_link_1').selected_text

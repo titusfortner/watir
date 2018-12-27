@@ -41,11 +41,29 @@ describe 'Automatic Waiting' do
         expect(::Time.now - start_time).to be < Watir.default_timeout
       end
 
-      it 'waits until text field is displayed and then takes action' do
-        start_time = ::Time.now
-        browser.a(id: 'show_textfield').click
-        expect { browser.text_field(id: 'textfield').set 'Foo' }.to_not raise_exception
-        expect(::Time.now - start_time).to be < Watir.default_timeout
+        it 'waits until exists and then executes script' do
+          start_time = ::Time.now
+          browser.a(id: 'add_foobar').click
+          script = "return (function(){     return arguments[0].focus(); } ).apply(null, arguments)"
+
+          expect { browser.execute_script(script, browser.div(id: 'foobar')) }.to_not raise_exception
+          expect(::Time.now - start_time).to be < Watir.default_timeout
+        end
+
+        it 'waits until exists without element call and then executes script' do
+          start_time = ::Time.now
+          browser.a(id: 'add_foobar').click
+
+          expect { browser.div(id: 'foobar').text_content }.to_not raise_exception
+          expect(::Time.now - start_time).to be < Watir.default_timeout
+        end
+
+        it 'waits until text field is displayed and then takes action' do
+          start_time = ::Time.now
+          browser.a(id: 'show_textfield').click
+          expect { browser.text_field(id: 'textfield').set 'Foo' }.to_not raise_exception
+          expect(::Time.now - start_time).to be < Watir.default_timeout
+        end
       end
     end
 
