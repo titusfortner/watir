@@ -11,7 +11,7 @@ if defined?(RSpec)
                             stale_exists
                             stale_visible
                             stale_present
-                            select_by
+                            select_all
                             value_button
                             wait_until_present
                             wait_while_present].freeze

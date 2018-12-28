@@ -18,7 +18,7 @@ module Watir
     #
 
     def include?(str_or_rx)
-      option(text: str_or_rx).exist? || option(label: str_or_rx).exist?
+      option(text: str_or_rx).exist? || option(label: str_or_rx).exist? || option(value: str_or_rx).exists?
     end
 
     #
@@ -29,9 +29,16 @@ module Watir
     # @return [String] The text of the option selected. If multiple options match, returns the first match.
     #
 
-    def select(*str_or_rx)
-      results = str_or_rx.flatten.map { |v| select_by v }
-      results.first
+    def select(*both, text: nil, value: nil, label: nil)
+      selection = {both: both, text: text, value: value, label: label}.select do |_k, v|
+        !v.nil? && ![v].flatten.empty?
+      end
+      raise 'Can not select by more than one method' if selection.size > 1
+
+      value = selection.values.first
+      type_check(value)
+
+      [value].flatten.map { |v| select_by v }.first
     end
 
     #
@@ -43,8 +50,9 @@ module Watir
     #
 
     def select_all(*str_or_rx)
-      results = str_or_rx.flatten.map { |v| select_all_by v }
-      results.first
+      Watir.logger.deprecate 'Select#select_all', 'Select#select with an Array or multiple parameters',
+                             ids: [:select_all]
+      select(*str_or_rx)
     end
 
     #
@@ -54,9 +62,16 @@ module Watir
     # @raise [Watir::Exception::NoValueFoundException] if the value does not exist.
     #
 
-    def select!(*str_or_rx)
-      results = str_or_rx.flatten.map { |v| select_by!(v, :single) }
-      results.first
+    def select!(*both, text: nil, value: nil, label: nil)
+      selection = {both: both, text: text, value: value, label: label}.select do |_k, v|
+        !v.nil? && ![v].flatten.empty?
+      end
+      raise 'Can not select by more than one method' if selection.size > 1
+
+      value = selection.values.first
+      type_check(value)
+
+      [value].flatten.map { |v| select_by! v, :multiple }.first
     end
 
     #
@@ -67,8 +82,9 @@ module Watir
     #
 
     def select_all!(*str_or_rx)
-      results = str_or_rx.flatten.map { |v| select_by!(v, :multiple) }
-      results.first
+      Watir.logger.deprecate 'Select#select_all!', 'Select#select! with an Array or multiple parameters',
+                             ids: [:select_all]
+      select!(*str_or_rx)
     end
 
     #
@@ -82,7 +98,8 @@ module Watir
     #
 
     def select_value(str_or_rx)
-      Watir.logger.deprecate '#select_value', '#select', ids: [:select_value]
+      Watir.logger.deprecate '#select_value', '#select directly or with :value keyword',
+                             ids: [:select_value]
       select_by str_or_rx
     end
 
@@ -114,8 +131,7 @@ module Watir
     #
 
     def value
-      option = selected_options.first
-      option&.value
+      selected_options.first&.value
     end
 
     #
@@ -126,8 +142,7 @@ module Watir
     #
 
     def text
-      option = selected_options.first
-      option&.text
+      selected_options.first&.text
     end
 
     # Returns an array of currently selected options.
@@ -136,7 +151,7 @@ module Watir
     #
 
     def selected_options
-      element_call { execute_js :selectedOptions, self }
+      element_call { execute_js :selectedOptions, @element }
     end
 
     private
@@ -144,10 +159,6 @@ module Watir
     def select_by(str_or_rx)
       found = find_options(:value, str_or_rx)
 
-      if found.size > 1
-        Watir.logger.deprecate 'Selecting Multiple Options with #select', '#select_all',
-                               ids: [:select_by]
-      end
       select_matching(found)
     end
 
@@ -179,6 +190,19 @@ module Watir
       end
     end
 
+    def type_check(value)
+      msg = "expected String, Number or Regexp, got #{value.inspect}:#{value.class}"
+
+      if value.is_a?(Array)
+        raise TypeError, msg if value.empty?
+
+        return value.each(&method(:type_check))
+      end
+      return if [String, Regexp].any? { |k| value.is_a?(k) }
+
+      raise TypeError, msg
+    end
+
     def matching_option?(how, what)
       selected_options.each do |opt|
         value = opt.send(how)
@@ -200,15 +224,10 @@ module Watir
 
     def find_options(how, str_or_rx)
       wait_while do
-        case str_or_rx
-        when String, Numeric, Regexp
-          @found = how == :value ? options(value: str_or_rx) : []
-          @found = options(text: str_or_rx) if @found.empty?
-          @found = options(label: str_or_rx) if @found.empty?
-          @found.empty? && Watir.relaxed_locate?
-        else
-          raise TypeError, "expected String or Regexp, got #{str_or_rx.inspect}:#{str_or_rx.class}"
-        end
+        @found = how == :value ? options(value: str_or_rx) : []
+        @found = options(text: str_or_rx) if @found.empty?
+        @found = options(label: str_or_rx) if @found.empty?
+        @found.empty? && Watir.relaxed_locate?
       end
       # TODO: Remove conditional when remove relaxed_locate toggle
       return @found unless @found.empty?
