@@ -35,8 +35,7 @@ module Watir
       end
       raise "Can not select by more than one method: #{selection.inspect}" if selection.size > 1
 
-      value = selection.values.first
-      type_check(value)
+      value = normalize_value(selection.values.first)
 
       [value].flatten.map { |v| select_by v }.first
     end
@@ -68,8 +67,7 @@ module Watir
       end
       raise 'Can not select by more than one method' if selection.size > 1
 
-      value = selection.values.first
-      type_check(value)
+      value = normalize_value(selection.values.first)
 
       [value].flatten.map { |v| select_by! v, :multiple }.first
     end
@@ -190,14 +188,14 @@ module Watir
       end
     end
 
-    def type_check(value)
+    def normalize_value(value)
       msg = "expected String, Numeric or Regexp, got #{value.inspect}:#{value.class}"
 
       case value
       when Array
         raise TypeError, msg if value.empty?
 
-        value.each(&method(:type_check))
+        value.map(&method(:normalize_value))
       when Numeric
         value.to_s
       when String, Regexp

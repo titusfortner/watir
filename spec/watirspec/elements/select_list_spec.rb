@@ -243,9 +243,15 @@ describe 'SelectList' do
 
   describe '#select' do
     context 'when finding by default' do
-      it 'locates value' do
+      it 'locates value by String' do
         browser.select_list(name: 'new_user_languages').clear
         browser.select_list(name: 'new_user_languages').select('2')
+        expect(browser.select_list(name: 'new_user_languages').selected_options.map(&:text)).to eq %w[EN]
+      end
+
+      it 'locates value by Numeric' do
+        browser.select_list(name: 'new_user_languages').clear
+        browser.select_list(name: 'new_user_languages').select(2)
         expect(browser.select_list(name: 'new_user_languages').selected_options.map(&:text)).to eq %w[EN]
       end
 
