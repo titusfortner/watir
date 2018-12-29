@@ -33,7 +33,7 @@ module Watir
       selection = {both: both, text: text, value: value, label: label}.select do |_k, v|
         !v.nil? && ![v].flatten.empty?
       end
-      raise 'Can not select by more than one method' if selection.size > 1
+      raise "Can not select by more than one method: #{selection.inspect}" if selection.size > 1
 
       value = selection.values.first
       type_check(value)
@@ -191,16 +191,20 @@ module Watir
     end
 
     def type_check(value)
-      msg = "expected String, Number or Regexp, got #{value.inspect}:#{value.class}"
+      msg = "expected String, Numeric or Regexp, got #{value.inspect}:#{value.class}"
 
-      if value.is_a?(Array)
+      case value
+      when Array
         raise TypeError, msg if value.empty?
 
-        return value.each(&method(:type_check))
+        value.each(&method(:type_check))
+      when Numeric
+        value.to_s
+      when String, Regexp
+        value
+      else
+        raise TypeError, msg
       end
-      return if [String, Regexp].any? { |k| value.is_a?(k) }
-
-      raise TypeError, msg
     end
 
     def matching_option?(how, what)
