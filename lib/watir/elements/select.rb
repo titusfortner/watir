@@ -173,9 +173,7 @@ module Watir
 
     def process_str_or_rx(str_or_rx)
       case str_or_rx
-      when Numeric
-        "^#{str_or_rx.to_s}$"
-      when String
+      when Numeric, String
         "^#{str_or_rx}$"
       when Regexp
         str_or_rx.inspect.sub('\\A', '^')

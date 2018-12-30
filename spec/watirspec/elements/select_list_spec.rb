@@ -245,7 +245,7 @@ describe 'SelectList' do
     it 'selects option' do
       browser.select_list(name: 'new_user_languages').clear
       expect {
-      browser.select_list(name: 'new_user_languages').select_value('2')
+        browser.select_list(name: 'new_user_languages').select_value('2')
       }.to have_deprecated_select_value
       expect(browser.select_list(name: 'new_user_languages').selected_options.map(&:text)).to eq %w[EN]
     end
@@ -579,7 +579,7 @@ describe 'SelectList' do
 
     it 'raises a TypeError if argument is not a String, Regexp or Numeric' do
       browser.select_list(id: 'new_user_languages').clear
-      expect { browser.select_list(id: 'new_user_languages').select!({}) }.to raise_error#(TypeError)
+      expect { browser.select_list(id: 'new_user_languages').select!({}) }.to raise_error # (TypeError)
     end
   end
 
