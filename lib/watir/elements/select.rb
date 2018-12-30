@@ -51,7 +51,7 @@ module Watir
     def select_all(*str_or_rx)
       Watir.logger.deprecate 'Select#select_all', 'Select#select with an Array or multiple parameters',
                              ids: [:select_all]
-      select(*str_or_rx)
+      select_all_by(*str_or_rx)
     end
 
     #
@@ -95,10 +95,10 @@ module Watir
     # @return [String] The option selected. If multiple options match, returns the first match
     #
 
-    def select_value(str_or_rx)
+    def select_value(value)
       Watir.logger.deprecate '#select_value', '#select directly or with :value keyword',
                              ids: [:select_value]
-      select_by str_or_rx
+      select(value: value)
     end
 
     #
@@ -173,6 +173,8 @@ module Watir
 
     def process_str_or_rx(str_or_rx)
       case str_or_rx
+      when Numeric
+        "^#{str_or_rx.to_s}$"
       when String
         "^#{str_or_rx}$"
       when Regexp
@@ -183,8 +185,6 @@ module Watir
                  .sub(%r{\/[a-z]*$}, '')
                  .gsub(/\(\?#.+\)/, '')
                  .gsub(/\(\?-\w+:/, '(')
-      else
-        raise TypeError, "expected String or Regexp, got #{str_or_rx.inspect}:#{str_or_rx.class}"
       end
     end
 

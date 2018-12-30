@@ -241,6 +241,16 @@ describe 'SelectList' do
     end
   end
 
+  describe '#select_value' do
+    it 'selects option' do
+      browser.select_list(name: 'new_user_languages').clear
+      expect {
+      browser.select_list(name: 'new_user_languages').select_value('2')
+      }.to have_deprecated_select_value
+      expect(browser.select_list(name: 'new_user_languages').selected_options.map(&:text)).to eq %w[EN]
+    end
+  end
+
   describe '#select' do
     context 'when finding by default' do
       it 'locates value by String' do
@@ -285,6 +295,12 @@ describe 'SelectList' do
       it 'selects an option with a String' do
         browser.select_list(name: 'new_user_languages').clear
         browser.select_list(name: 'new_user_languages').select(value: '2')
+        expect(browser.select_list(name: 'new_user_languages').selected_options.map(&:text)).to eq %w[EN]
+      end
+
+      it 'selects an option with a Numeric' do
+        browser.select_list(name: 'new_user_languages').clear
+        browser.select_list(name: 'new_user_languages').select(value: 2)
         expect(browser.select_list(name: 'new_user_languages').selected_options.map(&:text)).to eq %w[EN]
       end
 
@@ -417,9 +433,15 @@ describe 'SelectList' do
 
   describe '#select!' do
     context 'when finding by default' do
-      it 'locates value' do
+      it 'locates value by String' do
         browser.select_list(name: 'new_user_languages').clear
         browser.select_list(name: 'new_user_languages').select!('2')
+        expect(browser.select_list(name: 'new_user_languages').selected_options.map(&:text)).to eq %w[EN]
+      end
+
+      it 'locates value by Numeric' do
+        browser.select_list(name: 'new_user_languages').clear
+        browser.select_list(name: 'new_user_languages').select!(2)
         expect(browser.select_list(name: 'new_user_languages').selected_options.map(&:text)).to eq %w[EN]
       end
 
@@ -453,6 +475,12 @@ describe 'SelectList' do
       it 'selects an option with a String' do
         browser.select_list(name: 'new_user_languages').clear
         browser.select_list(name: 'new_user_languages').select!(value: '2')
+        expect(browser.select_list(name: 'new_user_languages').selected_options.map(&:text)).to eq %w[EN]
+      end
+
+      it 'selects an option with a Numeric' do
+        browser.select_list(name: 'new_user_languages').clear
+        browser.select_list(name: 'new_user_languages').select!(value: 2)
         expect(browser.select_list(name: 'new_user_languages').selected_options.map(&:text)).to eq %w[EN]
       end
 
@@ -528,6 +556,10 @@ describe 'SelectList' do
       expect(browser.select_list(name: 'new_user_languages').select!('Danish')).to eq 'Danish'
     end
 
+    it 'returns the first matching value if there are multiple values selected' do
+      expect(browser.select_list(name: 'new_user_languages').select!([/ish/])).to eq 'Danish'
+    end
+
     it 'selects options with a single-quoted value' do
       browser.select_list(id: 'single-quote').select!("'foo'")
     end
@@ -547,7 +579,7 @@ describe 'SelectList' do
 
     it 'raises a TypeError if argument is not a String, Regexp or Numeric' do
       browser.select_list(id: 'new_user_languages').clear
-      expect { browser.select_list(id: 'new_user_languages').select!({}) }.to raise_error(TypeError)
+      expect { browser.select_list(id: 'new_user_languages').select!({}) }.to raise_error#(TypeError)
     end
   end
 
