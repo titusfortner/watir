@@ -8,8 +8,7 @@ describe Watir::Browser do
   end
 
   after do
-    browser.original_window.use
-    browser.windows.reject(&:current?).each(&:close)
+    browser.windows.restore!
   end
 
   describe '#windows' do
@@ -126,16 +125,15 @@ describe Watir::Browser do
 end
 
 describe Watir::Window do
+  after do
+    browser.windows.restore!
+  end
+
   context 'multiple windows' do
     before do
       browser.goto WatirSpec.url_for('window_switching.html')
       browser.a(id: 'open').click
       browser.windows.wait_until(size: 2)
-    end
-
-    after do
-      browser.original_window.use
-      browser.windows.reject(&:current?).each(&:close)
     end
 
     bug 'Focus is on newly opened window instead of the first', :safari do
@@ -258,11 +256,6 @@ describe Watir::Window do
         browser.windows.wait_until(size: 1)
       end
 
-      after do
-        browser.original_window.use
-        browser.windows.reject(&:current?).each(&:close)
-      end
-
       describe '#exists?' do
         it 'returns false if previously referenced window is closed' do
           expect(@closed_window).to_not be_present
@@ -311,11 +304,6 @@ describe Watir::Window do
   end
 
   context 'with a closed window on a delay' do
-    after do
-      browser.original_window.use
-      browser.windows.reject(&:current?).each(&:close)
-    end
-
     it 'raises an exception when locating a window closed during lookup' do
       browser.goto WatirSpec.url_for('window_switching.html')
       browser.a(id: 'open').click
@@ -355,11 +343,6 @@ describe Watir::Window do
         browser.window(title: 'closeable window').use
         browser.a(id: 'close').click
         browser.windows.wait_until(size: 1)
-      end
-
-      after do
-        browser.original_window.use
-        browser.windows.reject(&:current?).each(&:close)
       end
 
       describe '#present?' do
@@ -488,8 +471,7 @@ describe Watir::WindowCollection do
   end
 
   after do
-    browser.original_window.use
-    browser.windows.reject(&:current?).each(&:close)
+    browser.windows.restore!
   end
 
   it '#to_a' do
@@ -543,5 +525,22 @@ describe Watir::WindowCollection do
 
       expect(windows1).to eq windows2
     end
+  end
+
+  it '#reset!' do
+    wins = browser.windows
+    expect(wins.to_a.size).to eq 2
+    wins.reset!
+    expect(wins.instance_variable_get('@to_a')).to be_nil
+  end
+
+  it '#restore!' do
+    browser.a(id: 'open').click
+    browser.windows.wait_until(size: 3)
+    browser.window(title: 'closeable window').use
+
+    browser.windows.restore!
+    expect(browser.windows.size).to eq 1
+    expect(browser.title).to eq 'window switching'
   end
 end

@@ -39,6 +39,11 @@ module Watir
     end
     alias eql? ==
 
+    def restore!
+      to_a.reject { |win| win.handle == @browser.original_window.handle }.each(&:close)
+      @browser.original_window.use
+    end
+
     def reset!
       @window_list = nil
     end
