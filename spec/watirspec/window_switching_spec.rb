@@ -534,13 +534,15 @@ describe Watir::WindowCollection do
     expect(wins.instance_variable_get('@to_a')).to be_nil
   end
 
-  it '#restore!' do
-    browser.a(id: 'open').click
-    browser.windows.wait_until(size: 3)
-    browser.window(title: 'closeable window').use
+  bug 'Focus is on newly opened window instead of the first', :safari do
+    it '#restore!' do
+      browser.a(id: 'open').click
+      browser.windows.wait_until(size: 3)
+      browser.window(title: 'closeable window').use
 
-    browser.windows.restore!
-    expect(browser.windows.size).to eq 1
-    expect(browser.title).to eq 'window switching'
+      browser.windows.restore!
+      expect(browser.windows.size).to eq 1
+      expect(browser.title).to eq 'window switching'
+    end
   end
 end
