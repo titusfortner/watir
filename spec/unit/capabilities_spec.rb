@@ -39,11 +39,7 @@ describe Watir::Capabilities do
     service_class(browser).driver_path = nil
   end
 
-  supported_browsers = %i[chrome firefox ie safari]
-
-  not_compliant_on :v6_19 do
-    supported_browsers << :edge
-  end
+  supported_browsers = %i[chrome edge firefox ie safari]
 
   # Options:
   # :listener

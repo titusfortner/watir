@@ -68,6 +68,8 @@ module Watir
       case @browser
       when :chrome
         process_chrome_options(browser_options)
+      when :edge, :microsoftedge
+        process_edge_options(browser_options)
       when :firefox
         process_firefox_options(browser_options)
       when :safari
@@ -155,6 +157,16 @@ module Watir
 
       @selenium_opts[:options].args << '--headless'
       @selenium_opts[:options].args << '--disable-gpu'
+    end
+
+    def process_edge_options(browser_options)
+      @selenium_opts[:options] = browser_options if browser_options.is_a? Selenium::WebDriver::Edge::Options
+      @selenium_opts[:options] ||= Selenium::WebDriver::Edge::Options.new(**browser_options)
+
+      if @options.delete(:headless)
+        @selenium_opts[:options].args << '--headless'
+        @selenium_opts[:options].args << '--disable-gpu'
+      end
     end
 
     def process_firefox_options(browser_options)
@@ -260,7 +272,7 @@ module Watir
       if @options.key?(:browser)
         @options.delete(:browser)
       elsif @options.key?(:capabilities)
-        @options[:capabilities].browser_name.tr(' ', '_').to_sym
+        @options[:capabilities].browser_name.tr(' ', '_').downcase.to_sym
       elsif @options.key?(:options)
         @options[:options].class.to_s.split('::')[-2].downcase.to_sym
       else
