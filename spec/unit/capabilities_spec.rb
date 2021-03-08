@@ -207,47 +207,6 @@ describe Watir::Capabilities do
         end
       end
     end
-
-    # 6.18 works
-    # 6.19 deprecate --> put in options
-    # 7.0  remove
-    context 'extra things' do
-      it 'puts in capabilities when capabilities not specified' do
-        expect {
-          capabilities = Watir::Capabilities.new(browser_symbol, foo: 'bar')
-          args = capabilities.to_args
-          expect(args.last[:capabilities][:foo]).to eq 'bar'
-        }.to have_deprecated_unknown_keyword
-      end
-
-      # 6.18 works
-      # 6.19 deprecate --> put in options
-      # 7.0  remove
-      it 'puts in top level when Capabilities specified' do
-        caps = Selenium::WebDriver::Remote::Capabilities.send(browser_symbol)
-        capabilities = Watir::Capabilities.new(browser_symbol,
-                                               capabilities: caps,
-                                               foo: 'bar')
-        expect {
-          expect(capabilities.to_args.last[:foo]).to eq 'bar'
-        }.to have_deprecated_unknown_keyword
-      end
-
-      # 6.18 works
-      # 6.19 deprecate --> put in options
-      # 7.0  remove
-      it 'puts in top level when Options specified' do
-        expect {
-          caps = Selenium::WebDriver::Remote::Capabilities.send(browser_symbol)
-          capabilities = Watir::Capabilities.new(browser_symbol,
-                                                 capabilities: caps,
-                                                 options: options_class(browser_symbol).new,
-                                                 foo: 'bar')
-          args = capabilities.to_args
-          expect(args.last[:foo]).to eq 'bar'
-        }.to have_deprecated_unknown_keyword
-      end
-    end
   end
 
   # Options:
@@ -459,21 +418,6 @@ describe Watir::Capabilities do
       args = capabilities.to_args
 
       expect(args.last[:options].args).to include '--headless'
-    end
-
-    # 6.18 works - Putting it into desired capabilities
-    # 6.19 deprecate this, it should go under options
-    # 7.0  remove
-    it 'allows sending to Browser Service Provider top level' do
-      expect {
-        capabilities = Watir::Capabilities.new(:chrome,
-                                               'sauce:options' => {username: ENV['SAUCE_USERNAME'],
-                                                                   access_key: ENV['SAUCE_ACCESS_KEY']},
-                                               url: 'https://ondemand.us-west-1.saucelabs.com')
-        args = capabilities.to_args
-        actual_capabilities = args.last[:capabilities]
-        expect(actual_capabilities['sauce:options'].keys).to include :username, :access_key
-      }.to have_deprecated_unknown_keyword
     end
 
     # 6.18 broken; options class eats it
