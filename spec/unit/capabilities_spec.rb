@@ -192,20 +192,8 @@ describe Watir::Capabilities do
       opts = options_class(browser_symbol).new
 
       expect {
-        @capabilities = Watir::Capabilities.new(browser_symbol,
-                                                capabilities_key => caps,
-                                                options: opts)
-      }.to have_deprecated_options_capabilities
-
-      args = @capabilities.to_args
-      expect(args.last[:capabilities]).to eq caps
-
-      # Safari never implemented to accept options
-      if browser_symbol == :safari
-        not_compliant_on :v6_18 do
-          expect(args.last[:options]).to eq opts
-        end
-      end
+        Watir::Capabilities.new(browser_symbol, capabilities: caps, options: opts)
+      }.to raise_exception(ArgumentError, ':capabilities and :options are not both allowed')
     end
   end
 
@@ -379,21 +367,12 @@ describe Watir::Capabilities do
     it 'browser name with options & capabilities' do
       options = {prefs: {foo: 'bar'}}
 
-        expect {
-          @caps = Watir::Capabilities.new(:chrome,
-                                          url: 'https://example.com/wd/hub',
-                                          capabilities_key => Selenium::WebDriver::Remote::Capabilities.chrome,
-                                          options: options)
-        }.to have_deprecated_options_capabilities
-
-      args = @caps.to_args
-      expect(args.first).to eq :remote
-      desired_capabilities = args.last[:capabilities]
-      expect(desired_capabilities).to be_a(Selenium::WebDriver::Remote::Capabilities)
-      expect(desired_capabilities.browser_name).to eq 'chrome'
-      actual_options = args.last[:options]
-      expect(actual_options).to be_a(Selenium::WebDriver::Chrome::Options)
-      expect(actual_options.prefs).to eq(foo: 'bar')
+      expect {
+        Watir::Capabilities.new(:chrome,
+                                url: 'https://example.com/wd/hub',
+                                capabilities: Selenium::WebDriver::Remote::Capabilities.chrome,
+                                options: options)
+      }.to raise_exception(ArgumentError, ':capabilities and :options are not both allowed')
     end
 
     # 6.18 broken - Selenium doesn't support "chromeOptions" in Capabilities. Did it even at one point?
