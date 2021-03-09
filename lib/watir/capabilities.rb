@@ -158,9 +158,7 @@ module Watir
     end
 
     def process_firefox_options(browser_options)
-      if browser_options.is_a? Selenium::WebDriver::Firefox::Options
-        @selenium_opts[:options] = browser_options
-      end
+      @selenium_opts[:options] = browser_options if browser_options.is_a? Selenium::WebDriver::Firefox::Options
 
       @selenium_opts[:options] ||= Selenium::WebDriver::Firefox::Options.new(**browser_options)
       if @options.key?(:profile)
@@ -223,15 +221,15 @@ module Watir
 
     def process_args
       args = if @options.key?(:args)
-              deprecate_args
-              @options.delete(:args)
-            elsif @options.key?(:switches)
-              deprecate_switches
-              @options.delete(:switches)
-            else
-              return
-            end
-       args.each {|arg| @selenium_opts[:options].args << arg}
+               deprecate_args
+               @options.delete(:args)
+             elsif @options.key?(:switches)
+               deprecate_switches
+               @options.delete(:switches)
+             else
+               return
+             end
+      args.each { |arg| @selenium_opts[:options].args << arg }
     end
 
     def deprecate_args
@@ -251,9 +249,9 @@ module Watir
     def deprecate_remote(browser)
       return unless browser == :remote
 
-      Watir.logger.deprecate(":remote to initialize Browser",
-                             "browser key along with remote url",
-                             ids: [:remote_keyword, :capabilities],
+      Watir.logger.deprecate(':remote to initialize Browser',
+                             'browser key along with remote url',
+                             ids: %i[remote_keyword capabilities],
                              reference: 'http://watir.com/guides/capabilities.html')
       infer_browser
     end
@@ -264,7 +262,7 @@ module Watir
       elsif @options.key?(:capabilities)
         @options[:capabilities].browser_name.tr(' ', '_').to_sym
       elsif @options.key?(:options)
-        @options[:options].class.to_s.split("::")[-2].downcase.to_sym
+        @options[:options].class.to_s.split('::')[-2].downcase.to_sym
       else
         :chrome
       end
@@ -275,10 +273,11 @@ module Watir
       return unless opts.is_a?(Hash)
 
       w3c_keys = %i[browser_version platform_name accept_insecure_certs page_load_strategy proxy set_window_rect
-      timeouts unhandled_prompt_behavior strict_file_interactibility]
+                    timeouts unhandled_prompt_behavior strict_file_interactibility]
 
       opts.each do |key, _val|
         next unless key.to_s.include?(':') || w3c_keys.include?(key)
+
         @w3c_caps[key] = opts.delete(key)
       end
     end
